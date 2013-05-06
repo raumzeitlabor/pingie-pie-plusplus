@@ -39,6 +39,8 @@ GPIO.setup(B6, GPIO.OUT)
 GPIO.setup(B7, GPIO.OUT)
 GPIO.setup(PS, GPIO.OUT)
 
+fixed_9x15 = ImageFont.truetype("Fixed9x15.ttf", 15)
+
 def chunks(l, n):
     for i in xrange(0, len(l), n):
         yield l[i:i+n]
@@ -75,6 +77,5 @@ def render_text(text):
 
     draw.rectangle((0, 0, WIDTH, HEIGHT), fill=0)
 
-    font = ImageFont.truetype("/root/miso-bold.ttf", 24)
-    draw.text((0, 0), text, font=font, fill=1)
+    draw.text((0, 0), text, font=fixed_9x15, fill=1)
     return pixmap
