@@ -7,15 +7,12 @@ from twisted.web import static, server
 from twisted.web.resource import Resource
 
 import cgi
-import json
-from base64 import b64decode
 import hashlib
 import Image
 import traceback
+import StringIO
 
 from raumzeitlabor.pingie import display
-
-import StringIO
 
 def extract_image(request):
   headers = request.getAllHeaders()
