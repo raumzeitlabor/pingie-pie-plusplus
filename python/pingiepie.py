@@ -27,24 +27,30 @@ def extract_image(request):
 
   return post["file"].value
 
-class Hello(Resource):
+def save_image(img):
+  buf = StringIO.StringIO()
+  img.save(buf, format="png")
+  sha = hashlib.sha256(buf.getvalue()).hexdigest()
+  # maybe check if we are overwriting a exisiting file?
+  img.save("/run/%s.png" % sha)
 
-    def getChild(self, name, request):
-        return self
+  return sha
 
-    def render_GET(self, request):
-        text = request.prepath[0]
-        print text
-        pixmap = display.render_text(text)
-        display.transfer(pixmap)
-        return 'got: %r' % text
 
-    def render_POST(self, request):
-        content = request.content.read()
-        obj = json.loads(content)
-        pixmap = Image.fromstring('1', (display.WIDTH, display.HEIGHT), b64decode(obj['pixmap']) )
-        display.transfer(pixmap)
-        return 'okay.'
+class CreateText(Resource):
+  def render_GET(self, request):
+    return 'create text here'
+
+  def render_POST(self, request):
+    try:
+      text = request.args["text"][0]
+      img = display.render_text(text)
+      sha = save_image(img)
+
+      return sha
+
+    except:
+      return traceback.format_exc()
 
 class CreateImage(Resource):
   def render_GET(self, request):
@@ -57,21 +63,17 @@ class CreateImage(Resource):
       img = Image.open(StringIO.StringIO(buf))
       #if img.mode != "1":
       #  return "Image has more than 2 colours"
-
-      sha = hashlib.sha256(buf).hexdigest()
-      # maybe check if we are overwriting a exisiting file?
-      f = open("%s" % sha, 'w')
-      f.write(buf)
-      f.close()
+      sha = save_image(img)
 
       return sha
+
     except:
       return traceback.format_exc()
 
 class ShowImage(Resource):
   def render_POST(self, request):
     sha = request.args["id"][0]
-    img = Image.open(sha)
+    img = Image.open("/run/%s.png" % sha)
     display.transfer(img)
     return 'ok'
 
@@ -83,6 +85,7 @@ root.putChild("create", create)
 root.putChild("show", show)
 
 create.putChild("image", CreateImage())
+create.putChild("text", CreateText())
 show.putChild("image", ShowImage())
 
 site = server.Site(root)
