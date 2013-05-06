@@ -41,26 +41,20 @@ GPIO.setup(PS, GPIO.OUT)
 
 fixed_9x15 = ImageFont.truetype("Fixed9x15.ttf", 15)
 
-def chunks(l, n):
-    for i in xrange(0, len(l), n):
-        yield l[i:i+n]
+def transfer(image):
+    image = image.rotate(180)
 
+    from itertools import cycle
+    pins = cycle([B0, B1, B2, B3, B4, B5, B6, B7])
 
-def transfer(pixmap):
-    pixmap_rotated = pixmap.rotate(180)
+    pin = pins.next()
+    for pixel in image.getdata():
+        GPIO.output(pin, pixel)
 
-    for x in chunks(list(pixmap_rotated.getdata()),8):
-        GPIO.output(B0, x[0])
-        GPIO.output(B1, x[1])
-        GPIO.output(B2, x[2])
-        GPIO.output(B3, x[3])
-        GPIO.output(B4, x[4])
-        GPIO.output(B5, x[5])
-        GPIO.output(B6, x[6])
-        GPIO.output(B7, x[7])
-
-        GPIO.output(BS, GPIO.HIGH)
-        GPIO.output(BS, GPIO.LOW)
+        pin = pins.next()
+        if pin == B0:
+            GPIO.output(BS, GPIO.HIGH)
+            GPIO.output(BS, GPIO.LOW)
 
     # test relais
     GPIO.output(B0, 1)
