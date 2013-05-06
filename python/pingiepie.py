@@ -40,7 +40,7 @@ class CreateText(Resource):
 
   def render_POST(self, request):
     try:
-      text = request.args["text"][0]
+      text = request.args["text"][0].decode(encoding='utf-8')
       img = display.render_text(text)
       sha = save_image(img)
 
