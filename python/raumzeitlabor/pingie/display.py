@@ -43,7 +43,8 @@ GPIO.setup(PS, GPIO.OUT)
 fixed_9x15 = ImageFont.truetype("Fixed9x15.ttf", 15)
 
 def transfer(image):
-    image = image.rotate(180)
+    # resize image to display size and rotate, because it's mounted upside down
+    image = image.crop((0, 0, WIDTH, HEIGHT)).rotate(180)
 
     from itertools import cycle
     pins = cycle([B0, B1, B2, B3, B4, B5, B6, B7])
