@@ -26,6 +26,7 @@ PS = 3
 WIDTH = 152
 HEIGHT = 16
 
+GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 
 GPIO.setup(BS, GPIO.OUT)
