@@ -5,12 +5,6 @@ try:
 except RuntimeError:
   print("Needs to be run as superuser, because of RPi.GPIO")
 
-import Image
-import ImageDraw
-import ImageFont
-
-import pprint
-
 BS = 7
 B0 = 8
 B1 = 10
@@ -39,8 +33,33 @@ GPIO.setup(B6, GPIO.OUT)
 GPIO.setup(B7, GPIO.OUT)
 GPIO.setup(PS, GPIO.OUT)
 
+import Image
+import ImageDraw
+import ImageFont
+
 fixed_9x15 = ImageFont.truetype("Fixed9x15.ttf", 15)
 fixed_5x8 = ImageFont.truetype("Fixed5x8.ttf", 8)
+
+import pprint
+from twisted.internet.task import LoopingCall
+from Queue import Queue
+
+
+queue = Queue()
+def update(image):
+  queue.put(image)
+
+def _refresh():
+  if queue.empty():
+    return
+
+  print("new frame")
+  image = queue.get()
+  transfer(image)
+  queue.task_done()
+
+refresh = LoopingCall(_refresh)
+refresh.start(0.3)
 
 def transfer(image):
   # resize image to display size and rotate, because it's mounted upside down

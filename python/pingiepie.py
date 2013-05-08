@@ -74,7 +74,7 @@ class ShowImage(Resource):
   def render_POST(self, request):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
-    display.transfer(img)
+    display.update(img)
     return 'ok'
 
 root = Resource()
