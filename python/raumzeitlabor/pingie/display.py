@@ -107,10 +107,9 @@ def render_text(text, font):
   image = Image.new('1', (WIDTH, font_height * lines))
   draw = ImageDraw.Draw(image)
 
-  line = 0
   for line in range(0, lines):
-    text = text[line]
-    draw.text((0, font_height * line), text, font=font, fill=1)
+    t = text[line]
+    draw.text((0, font_height * line), t, font=font, fill=1)
     line = line + 1
 
   return image
