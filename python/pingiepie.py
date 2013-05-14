@@ -11,6 +11,7 @@ import hashlib
 import Image
 import traceback
 import StringIO
+from itertools import cycle
 
 from raumzeitlabor.pingie import display
 
@@ -74,20 +75,21 @@ class ShowImage(Resource):
   def render_POST(self, request):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
-    display.update(img)
+    display.update(iter([(0, img)]))
     return 'ok'
 
 class ShowScroll(Resource):
   def render_POST(self, request):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
-    (_, height) = img.size
+    _, height = img.size
     img_list = []
     for i in range(0, height - display.HEIGHT + 2, 2):
-      print i
       img_cropped = img.crop((0, i, display.WIDTH, i + display.HEIGHT))
-      display.update(img_cropped)
+      img_list.append((3, img_cropped))
 
+    img_list[-1] = (9, img_list[-1][1])
+    display.update(cycle(img_list))
 
     return "ok"
 

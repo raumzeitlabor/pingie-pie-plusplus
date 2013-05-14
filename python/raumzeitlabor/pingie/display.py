@@ -42,24 +42,46 @@ fixed_5x8 = ImageFont.truetype("Fixed5x8.ttf", 8)
 
 import pprint
 from twisted.internet.task import LoopingCall
-from Queue import Queue
 
+from Queue import PriorityQueue
+class PriorityFifo(PriorityQueue):
+  def __init__(self):
+    PriorityQueue.__init__(self)
+    self.counter = 0
 
-queue = Queue()
-def update(image):
-  queue.put(image)
+  def put(self, item, priority):
+    PriorityQueue.put(self, (priority, self.counter, item))
+    self.counter += 1
 
+  def get(self, *args, **kwargs):
+    _, _, item = PriorityQueue.get(self, *args, **kwargs)
+    return item
+
+queue = PriorityFifo()
+def update(image, priority=100):
+  global queue
+  queue.put(image, priority)
+
+framelist = None
+frame = None
+next_frame = 0
 def _refresh():
-  if queue.empty():
-    return
+  global frame, framelist, next_frame
+  if not queue.empty():
+    print("new frame")
+    framelist = queue.get()
+    next_frame, frame = framelist.next()
+    queue.task_done()
+    transfer(frame)
 
-  print("new frame")
-  image = queue.get()
-  transfer(image)
-  queue.task_done()
-
-refresh = LoopingCall(_refresh)
-refresh.start(0.3)
+  if frame:
+    next_frame = next_frame - 1
+    if next_frame <= 0:
+      try:
+        next_frame, frame = framelist.next()
+        transfer(frame)
+      except StopIteration:
+        frame = None
 
 def transfer(image):
   # resize image to display size and rotate, because it's mounted upside down
@@ -113,3 +135,6 @@ def render_text(text, font):
     line = line + 1
 
   return image
+
+refresh = LoopingCall(_refresh)
+refresh.start(0.05)
