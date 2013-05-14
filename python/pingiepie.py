@@ -77,6 +77,21 @@ class ShowImage(Resource):
     display.update(img)
     return 'ok'
 
+class ShowScroll(Resource):
+  def render_POST(self, request):
+    sha = request.args["id"][0]
+    img = Image.open("/run/%s.png" % sha)
+    (_, height) = img.size
+    img_list = []
+    for i in range(0, height - display.HEIGHT + 2, 2):
+      print i
+      img_cropped = img.crop((0, i, display.WIDTH, i + display.HEIGHT))
+      display.update(img_cropped)
+
+
+    return "ok"
+
+
 root = Resource()
 create = Resource()
 show = Resource()
@@ -87,6 +102,7 @@ root.putChild("show", show)
 create.putChild("image", CreateImage())
 create.putChild("text", CreateText())
 show.putChild("image", ShowImage())
+show.putChild("scroll", ShowScroll())
 
 site = server.Site(root)
 reactor.listenTCP(80, site)
