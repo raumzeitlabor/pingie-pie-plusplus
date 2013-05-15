@@ -42,8 +42,7 @@ class CreateText(Resource):
   def render_POST(self, request):
     try:
       text = request.args["text"][0].decode(encoding='utf-8')
-      font = (request.args["font"][0]
-          if "font" in request.args else "9x15")
+      font = request.args["font"][0] if "font" in request.args else "5x8"
 
       img = display.render_text(text, font)
       sha = save_image(img)

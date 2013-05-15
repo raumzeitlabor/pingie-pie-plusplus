@@ -116,6 +116,8 @@ def render_text(text, font):
     font = fixed_5x8
   elif font == "9x15":
     font = fixed_9x15
+  else:
+    font = fixed_5x8
 
   # doesn't matter which character
   (font_width, font_height) = font.getsize('m')
