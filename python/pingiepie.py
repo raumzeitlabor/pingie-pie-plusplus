@@ -83,6 +83,10 @@ class ShowScroll(Resource):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
     _, height = img.size
+    if height <= display.HEIGHT:
+      display.update(iter([(0, img)]))
+      return "ok"
+
     img_list = []
     for i in range(0, height - display.HEIGHT + 2, 2):
       img_cropped = img.crop((0, i, display.WIDTH, i + display.HEIGHT))
