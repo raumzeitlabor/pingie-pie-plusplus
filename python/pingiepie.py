@@ -91,7 +91,9 @@ class ShowScroll(Resource):
       img_cropped = img.crop((0, i, display.WIDTH, i + display.HEIGHT))
       img_list.append((3, img_cropped))
 
-    img_list[-1] = (9, img_list[-1][1])
+    img_list[-1] = (30, img_list[-1][1])
+    img_list[0] = (30, img_list[0][1])
+
     display.update(cycle(img_list))
 
     return "ok"
