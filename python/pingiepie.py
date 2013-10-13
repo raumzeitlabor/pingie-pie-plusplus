@@ -74,7 +74,7 @@ class ShowImage(Resource):
   def render_POST(self, request):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
-    display.update(iter([(0, img)]))
+    display.update(cycle([(30, img)]))
     return 'ok'
 
 class ShowScroll(Resource):
@@ -83,7 +83,7 @@ class ShowScroll(Resource):
     img = Image.open("/run/%s.png" % sha)
     _, height = img.size
     if height <= display.HEIGHT:
-      display.update(iter([(0, img)]))
+      display.update(cycle([(30, img)]))
       return "ok"
 
     img_list = []

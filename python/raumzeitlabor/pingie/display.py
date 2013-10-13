@@ -42,6 +42,7 @@ fixed_5x8 = ImageFont.truetype("Fixed5x8.ttf", 8)
 
 import pprint
 from twisted.internet.task import LoopingCall
+from twisted.internet import reactor # needed for timers
 
 from Queue import PriorityQueue
 class PriorityFifo(PriorityQueue):
@@ -57,16 +58,31 @@ class PriorityFifo(PriorityQueue):
     _, _, item = PriorityQueue.get(self, *args, **kwargs)
     return item
 
+backlight = 1
+disable_timer = None
 queue = PriorityFifo()
 def update(image, priority=100):
-  global queue
+  global queue, backlight
   queue.put(image, priority)
 
-framelist = None
+  def disable_backlight():
+    global backlight
+    backlight = 0
+    print("disabling backlight")
+
+  backlight = 1
+
+  global disable_timer
+  if disable_timer is None or not disable_timer.active():
+    disable_timer = reactor.callLater(10 * 60, disable_backlight) # 10 minutes
+  else:
+    disable_timer.reset(0)
+
 frame = None
+framelist = None
 next_frame = 0
 def _refresh():
-  global frame, framelist, next_frame
+  global frame, framelist, next_frame, backlight
   if not queue.empty():
     print("new frame")
     framelist = queue.get()
@@ -75,22 +91,22 @@ def _refresh():
     transfer(frame)
 
   if frame:
+    print("next frame")
     next_frame = next_frame - 1
     if next_frame <= 0:
-      try:
-        next_frame, frame = framelist.next()
-        transfer(frame)
-      except StopIteration:
-        frame = None
+      next_frame, frame = framelist.next()
+      transfer(frame)
 
 def transfer(image):
-  # resize image to display size and rotate, because it's mounted upside down
-  image = image.crop((0, 0, WIDTH, HEIGHT)).rotate(180)
+  global backlight
 
   from itertools import cycle
   pins = cycle([B0, B1, B2, B3, B4, B5, B6, B7])
-
   pin = pins.next()
+
+  # resize image to display size and rotate, because it's mounted upside down
+  image = image.crop((0, 0, WIDTH, HEIGHT)).rotate(180)
+
   for pixel in image.getdata():
     GPIO.output(pin, pixel)
 
@@ -99,9 +115,7 @@ def transfer(image):
       GPIO.output(BS, GPIO.HIGH)
       GPIO.output(BS, GPIO.LOW)
 
-  # test relais
-  GPIO.output(B0, 1)
-
+  GPIO.output(B0, backlight)
   GPIO.output(BS, GPIO.HIGH)
   GPIO.output(BS, GPIO.LOW)
 
