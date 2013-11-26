@@ -9,79 +9,46 @@ from twisted.web.resource import Resource
 import cgi
 import hashlib
 import Image
-import traceback
 import StringIO
 from itertools import cycle
 
 from pingiepie import display
+from pingiepie.util import TextResource
+from pingiepie import util
 
-# twisted can't decode formdata on its own,
-# the internets suggests this is "best practice":
-# extracts the key 'file' from the given request
-def extract_field(request, field):
-  headers = request.getAllHeaders()
-  post = cgi.FieldStorage(
-    fp = request.content,
-    headers = headers,
-    environ = {'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': headers['content-type']}
-  )
-  return post[field].value
-
-# given an Image, save it on the ramdisk and return its sha256
-def save_image(img):
-  buf = StringIO.StringIO()
-  img.save(buf, format="png", bits=1)
-  sha = hashlib.sha256(buf.getvalue()).hexdigest()
-  # maybe check if we are overwriting a exisiting file?
-  img.save("/run/%s.png" % sha, bits=1)
-
-  return sha
-
-
-class CreateText(Resource):
+class CreateText(TextResource):
   def render_GET(self, request):
     return 'create text here'
 
-  def render_POST(self, request):
-    try:
-      text = request.args["text"][0].decode(encoding='utf-8')
-      font = request.args["font"][0] if "font" in request.args else "5x8"
+  def post(self, request):
+    text = request.args["text"][0].decode(encoding='utf-8')
+    font = request.args["font"][0] if "font" in request.args else "5x8"
 
-      img = display.render_text(text, font)
-      sha = save_image(img)
+    img = display.render_text(text, font)
+    sha = util.save_image(img)
 
-      return sha
+    return sha
 
-    except:
-      return traceback.format_exc()
-
-class CreateImage(Resource):
+class CreateImage(TextResource):
   def render_GET(self, request):
     return 'upload images here'
 
-  def render_POST(self, request):
-    try:
-      str_image = extract_field(request, 'file')
-      # lets see if its a usable image
-      img = Image.open(StringIO.StringIO(buf))
-      #if img.mode != "1":
-      #  return "Image has more than 2 colours"
-      sha = save_image(img)
+  def post(self, request):
+    str_image = util.extract_field(request, 'file')
+    # lets see if its a usable image
+    img = Image.open(StringIO.StringIO(buf))
+    sha = util.save_image(img)
+    return sha
 
-      return sha
-
-    except:
-      return traceback.format_exc()
-
-class ShowImage(Resource):
-  def render_POST(self, request):
+class ShowImage(TextResource):
+  def post(self, request):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
     display.update(cycle([(30, img)]))
     return 'ok'
 
-class ShowScroll(Resource):
-  def render_POST(self, request):
+class ShowScroll(TextResource):
+  def post(self, request):
     sha = request.args["id"][0]
     img = Image.open("/run/%s.png" % sha)
     _, height = img.size
