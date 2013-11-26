@@ -64,7 +64,8 @@ def update(image, priority=100):
   if disable_timer is None or not disable_timer.active():
     disable_timer = reactor.callLater(10 * 60, disable_backlight) # 10 minutes
   else:
-    disable_timer.reset(0)
+    # re-new the timeout
+    disable_timer.reset(10 * 60)
 
 frame = None
 framelist = None
