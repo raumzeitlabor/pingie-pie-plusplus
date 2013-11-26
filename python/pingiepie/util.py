@@ -19,6 +19,22 @@ class TextResource(Resource):
       request.setResponseCode(400)
       return e
 
+# PriorityQueue actually sorts it entries,
+# workaround it by having a counter to normalize it to a FIFO
+from Queue import PriorityQueue
+class PriorityFifo(PriorityQueue):
+  def __init__(self):
+    PriorityQueue.__init__(self)
+    self.counter = 0
+
+  def put(self, item, priority):
+    PriorityQueue.put(self, (priority, self.counter, item))
+    self.counter += 1
+
+  def get(self, *args, **kwargs):
+    _, _, item = PriorityQueue.get(self, *args, **kwargs)
+    return item
+
 # twisted can't decode formdata on its own,
 # the internets suggests this is "best practice":
 def extract_field(request, field):

@@ -44,19 +44,7 @@ import pprint
 from twisted.internet.task import LoopingCall
 from twisted.internet import reactor # needed for timers
 
-from Queue import PriorityQueue
-class PriorityFifo(PriorityQueue):
-  def __init__(self):
-    PriorityQueue.__init__(self)
-    self.counter = 0
-
-  def put(self, item, priority):
-    PriorityQueue.put(self, (priority, self.counter, item))
-    self.counter += 1
-
-  def get(self, *args, **kwargs):
-    _, _, item = PriorityQueue.get(self, *args, **kwargs)
-    return item
+from pingiepie.util import PriorityFifo
 
 backlight = 1
 disable_timer = None
@@ -91,7 +79,6 @@ def _refresh():
     transfer(frame)
 
   if frame:
-    print("next frame")
     next_frame = next_frame - 1
     if next_frame <= 0:
       next_frame, frame = framelist.next()
