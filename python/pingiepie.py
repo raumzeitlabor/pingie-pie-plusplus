@@ -13,7 +13,7 @@ import traceback
 import StringIO
 from itertools import cycle
 
-from raumzeitlabor.pingie import display
+from pingiepie import display
 
 # twisted can't decode formdata on its own,
 # the internets suggests this is "best practice":
