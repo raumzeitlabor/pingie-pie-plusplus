@@ -1,2 +1,0 @@
-#!/bin/bash
-g++ -Os -fpermissive -lcsv_parser -lrt main.c driver.c bcm_gpio.c
