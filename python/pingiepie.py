@@ -27,12 +27,13 @@ def extract_field(request, field):
   )
   return post[field].value
 
+# given an Image, save it on the ramdisk and return its sha256
 def save_image(img):
   buf = StringIO.StringIO()
-  img.save(buf, format="png")
+  img.save(buf, format="png", bits=1)
   sha = hashlib.sha256(buf.getvalue()).hexdigest()
   # maybe check if we are overwriting a exisiting file?
-  img.save("/run/%s.png" % sha)
+  img.save("/run/%s.png" % sha, bits=1)
 
   return sha
 
