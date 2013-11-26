@@ -15,15 +15,17 @@ from itertools import cycle
 
 from raumzeitlabor.pingie import display
 
-def extract_image(request):
+# twisted can't decode formdata on its own,
+# the internets suggests this is "best practice":
+# extracts the key 'file' from the given request
+def extract_field(request, field):
   headers = request.getAllHeaders()
   post = cgi.FieldStorage(
     fp = request.content,
     headers = headers,
     environ = {'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': headers['content-type']}
   )
-
-  return post["file"].value
+  return post[field].value
 
 def save_image(img):
   buf = StringIO.StringIO()
@@ -58,7 +60,7 @@ class CreateImage(Resource):
 
   def render_POST(self, request):
     try:
-      buf = extract_image(request)
+      str_image = extract_field(request, 'file')
       # lets see if its a usable image
       img = Image.open(StringIO.StringIO(buf))
       #if img.mode != "1":
