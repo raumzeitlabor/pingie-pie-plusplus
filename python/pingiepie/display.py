@@ -1,7 +1,7 @@
 # coding: UTF-8
 # vim: set ts=2 sw=2 sts=2 expandtab:
 try:
-  import RPi.GPIO as GPIO
+  from RPi import GPIO
 except RuntimeError:
   print("Needs to be run as superuser, because of RPi.GPIO")
 
@@ -34,11 +34,6 @@ GPIO.setup(B7, GPIO.OUT)
 GPIO.setup(PS, GPIO.OUT)
 
 import Image
-import ImageDraw
-import ImageFont
-
-fixed_9x15 = ImageFont.truetype("Fixed9x15.ttf", 15)
-fixed_5x8 = ImageFont.truetype("Fixed5x8.ttf", 8)
 
 import pprint
 from twisted.internet.task import LoopingCall
@@ -109,36 +104,6 @@ def transfer(image):
 
   GPIO.output(PS, GPIO.HIGH)
   GPIO.output(PS, GPIO.LOW)
-
-def render_text(text, font):
-  from textwrap import wrap
-  from math import floor
-
-  if font == "5x8":
-    font = fixed_5x8
-  elif font == "9x15":
-    font = fixed_9x15
-  else:
-    font = fixed_5x8
-
-  # doesn't matter which character
-  (font_width, font_height) = font.getsize('m')
-
-  # if the text is to large for a display-sized image,
-  # wordwrap the text and use additional lines; enlarge it accordingly
-  line_chars = floor(WIDTH / font_width)
-  text = list(wrap(text, line_chars))
-  lines = len(text)
-
-  image = Image.new('1', (WIDTH, font_height * lines))
-  draw = ImageDraw.Draw(image)
-
-  for line in range(0, lines):
-    t = text[line]
-    draw.text((0, font_height * line), t, font=font, fill=1)
-    line = line + 1
-
-  return image
 
 refresh = LoopingCall(_refresh)
 refresh.start(0.05)

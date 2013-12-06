@@ -24,7 +24,7 @@ class CreateText(TextResource):
     text = request.args["text"][0].decode(encoding='utf-8')
     font = request.args["font"][0] if "font" in request.args else "5x8"
 
-    img = display.render_text(text, font)
+    img = util.render_text(text, font)
     sha = util.save_image(img)
 
     return sha

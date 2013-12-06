@@ -4,6 +4,8 @@
 from twisted.web.resource import Resource
 import traceback
 import Image
+import ImageDraw
+import ImageFont
 import StringIO
 import hashlib
 
@@ -55,3 +57,36 @@ def save_image(img):
   img.save("/run/%s.png" % sha, bits=1)
 
   return sha
+
+fixed_9x15 = ImageFont.truetype("Fixed9x15.ttf", 15)
+fixed_5x8 = ImageFont.truetype("Fixed5x8.ttf", 8)
+
+def render_text(text, font):
+  from textwrap import wrap
+  from math import floor
+
+  if font == "5x8":
+    font = fixed_5x8
+  elif font == "9x15":
+    font = fixed_9x15
+  else:
+    font = fixed_5x8
+
+  # doesn't matter which character
+  (font_width, font_height) = font.getsize('m')
+
+  # if the text is to large for a display-sized image,
+  # wordwrap the text and use additional lines; enlarge it accordingly
+  line_chars = floor(WIDTH / font_width)
+  text = list(wrap(text, line_chars))
+  lines = len(text)
+
+  image = Image.new('1', (WIDTH, font_height * lines))
+  draw = ImageDraw.Draw(image)
+
+  for line in range(0, lines):
+    t = text[line]
+    draw.text((0, font_height * line), t, font=font, fill=1)
+    line = line + 1
+
+  return image
