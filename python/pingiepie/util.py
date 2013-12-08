@@ -9,6 +9,8 @@ import ImageFont
 import StringIO
 import hashlib
 
+from pingiepie.display import WIDTH #, HEIGHT
+
 # twisted's Resource normally formats exceptions in html, so we wrap it here
 # to generate plain text errors
 class TextResource(Resource):
